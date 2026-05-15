@@ -221,4 +221,12 @@ export const ChainInfos: ChainInfoNew[] = [
     //   },
     // ],
   },
+  {
+    rpc: 'https://cosmos-rpc.publicnode.com:443',
+    rest: 'https://cosmos-rest.publicnode.com',
+    chainId: 'cosmoshub-4',
+    chainName: 'Cosmos Hub',
+    useChainName: 'cosmoshub',
+    bech32Prefix: 'cosmos',
+  },
 ]
