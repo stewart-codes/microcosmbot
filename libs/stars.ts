@@ -1,14 +1,21 @@
 import { z } from 'zod'
 import { fromBech32, toBech32 } from 'cosmwasm'
 
+const compatiblePrefixes = ['stars', 'cosmos', 'neutron']
+
 export const zodStarsContractAddress = z
   .string()
-  .length(64)
-  .refine((val) => isStarAddress(val), 'Invalid stars address')
+  .refine((val) => {
+    try {
+      const { prefix, data } = fromBech32(val)
+      return compatiblePrefixes.includes(prefix) && data.length === 32
+    } catch {
+      return false
+    }
+  }, 'Invalid contract address')
 
 export const zodStarsAddress = z
   .string()
-  .length(44)
   .refine((val) => isStarAddress(val), 'Invalid stars address')
 
 export const isStarAddress = (addr: string) => {
@@ -19,8 +26,6 @@ export const isStarAddress = (addr: string) => {
     return false
   }
 }
-
-const compatiblePrefixes = ['stars']
 
 export const toStars = (addr: string) => {
   try {
