@@ -8,6 +8,7 @@ import { getDaoDaoContractAndNft } from '@microcosms/bot'
 import { fetchDenomExponent } from '@microcosms/bot'
 import { updateRuleSchema } from 'server/update-schema'
 import { getChainInfo } from '@microcosms/bot'
+import { fromBech32 } from 'cosmwasm'
 
 const getGroup = procedure
   .input(z.object({ code: z.string() }))
@@ -337,6 +338,18 @@ const getDaoDaoInfo = procedure
     if (!group) {
       console.log('group not found', input.code)
       throw new TRPCError({ code: 'NOT_FOUND' })
+    }
+    // Validate contract address prefix matches the group's chain
+    const chainInfo = getChainInfo(group.group.chainId)
+    if (!chainInfo) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'invalid chain' })
+    }
+    const { prefix } = fromBech32(input.contractAddress)
+    if (prefix !== chainInfo.bech32Prefix) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `contract address prefix '${prefix}' does not match chain prefix '${chainInfo.bech32Prefix}'`,
+      })
     }
     const daodaoinfo = await getDaoDaoContractAndNft(
       group.group.chainId,
