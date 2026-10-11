@@ -3,7 +3,7 @@
 # ============================================
 # Stage 1: Dependencies
 # ============================================
-FROM node:20-alpine AS deps
+FROM node:26-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
@@ -11,7 +11,7 @@ WORKDIR /app
 RUN corepack enable
 
 # Copy and package.json files (turbo.json needed for prepare scripts)
-COPY package.json pnpm-lock.yaml  ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Copy Prisma schema before install (needed for prepare script)
 COPY ./prisma ./prisma
@@ -25,7 +25,7 @@ RUN pnpm install --frozen-lockfile --production=false
 # ============================================
 # Stage 2: Builder
 # ============================================
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
@@ -52,7 +52,7 @@ RUN pnpm build
 # ============================================
 # Stage 3: Runner
 # ============================================
-FROM node:20-alpine AS runner
+FROM node:26-alpine AS runner
 RUN apk add --no-cache openssl
 WORKDIR /app
 

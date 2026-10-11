@@ -4,7 +4,9 @@
   "version": "0.2.1",
   "private": true,
   "license": "MIT",
+  "packageManager": "pnpm@11.8.0",
   "scripts": {
+    "preinstall": "node -e \"if(!(process.env.npm_config_user_agent||'').startsWith('pnpm/')){console.error('This project requires pnpm. Install dependencies with pnpm, not npm or yarn.');process.exit(1)}\"",
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
@@ -90,6 +92,7 @@
     "vitest": "^0.28.4"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=26",
+    "pnpm": ">=11"
   }
 }
