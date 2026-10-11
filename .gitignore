@@ -46,3 +46,5 @@ apps/web3/.env
 
 git.sh
 .claude/settings.local.json
+
+tsconfig.tsbuildinfo

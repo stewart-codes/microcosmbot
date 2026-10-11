@@ -17,6 +17,11 @@ export function initializeCronJobs(): void {
     return
   }
 
+  if(process.env.CRON_MODE!=='ON'){
+    console.log('[CRON] Skipping cron initialization because CRON_MODE is not ON')
+    return
+  }
+
   console.log('[CRON] Initializing cron jobs...')
 
   // Job 1: Update all entries - runs every 2 hours (same as Vercel config)
