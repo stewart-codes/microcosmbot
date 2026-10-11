@@ -1,14 +1,24 @@
 # syntax=docker/dockerfile:1
 
 # ============================================
-# Stage 1: Dependencies
+# Stage 0: Base (Node 26 + pnpm)
 # ============================================
-FROM node:26-alpine AS deps
+FROM node:26-alpine AS base
 RUN apk add --no-cache libc6-compat openssl
+
+# Node 26 does not ship Corepack. Install the pnpm version pinned in package.json.
+WORKDIR /tmp/pnpm-install
+COPY package.json ./
+RUN PNPM_VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]") \
+ && npm install -g "pnpm@${PNPM_VERSION}" \
+ && rm -rf /tmp/pnpm-install
+
 WORKDIR /app
 
-# enable corepack for pnpm
-RUN corepack enable
+# ============================================
+# Stage 1: Dependencies
+# ============================================
+FROM base AS deps
 
 # Copy and package.json files (turbo.json needed for prepare scripts)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -16,27 +26,19 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # Copy Prisma schema before install (needed for prepare script)
 COPY ./prisma ./prisma
 
-# enable corepack for pnpm
-RUN corepack enable
-
 # Install dependencies
 RUN pnpm install --frozen-lockfile --production=false
 
 # ============================================
 # Stage 2: Builder
 # ============================================
-FROM node:26-alpine AS builder
-RUN apk add --no-cache libc6-compat openssl
-WORKDIR /app
+FROM base AS builder
 
 # Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
 # Copy source files
 COPY . .
-
-# enable corepack for pnpm
-RUN corepack enable
 
 # Generate Prisma Client
 RUN pnpm exec prisma generate
